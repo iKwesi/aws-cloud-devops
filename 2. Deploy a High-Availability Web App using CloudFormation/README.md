@@ -26,7 +26,7 @@ The folder contains the following files:
 ## Main Components: 
 
 - **VPC**  
-  A VPC where all relevant infrastructure will be deployed into.
+  A VPC allows us to launch AWS resources into a virtual network with the benefits of scalability.
 
 - **Public Subnets**  
   Public subnets contain ElasticIPs and NAT Gateways allowing access to the internet from within private
@@ -39,16 +39,16 @@ The folder contains the following files:
   Route Tables and Routes manage the traffic between the subnets and the internet through NAT Gateways and the Internet Gateway.
 
 - **NAT Gateways and Internet Gateway**  
-  NAT Gateways and Internet Gateways enable access between subnets and the internet.
+  Generally, we place a NAT gateway in a public subnet to enable the servers in a private subnet to connect to the Internet. And sometimes, we want to prevent the Internet from connecting to the servers in the private subnet..
   
 - **Load Balancer, Autoscaling, Launch Configuration and Target Groups**  
   The Load Balancer allows to evenly distribute requests to EC2 instances located in private subnets. This is possible by specifying the relevant TargetGroup in the Load Balancer's Listener.
 
 - **Security Groups**  
-  Security Groups handle ingress and egress traffic for EC2 instances and in this project restrict ingress traffic to port 80.
+  Security Groups handle ingress and egress traffic for EC2 instances. We used only `port:80`.
   
-- **IAM Role and Instance Profile**  
-  An IAM role will be created allowing ReadOnly access to S3 where the project's deployment files are located.
+- **IAM Role**  
+  An IAM role will be created allowing ReadOnly access to S3.
 
 ### Bonus
 - **CloudWatch Alarm and  SNS Topic**
