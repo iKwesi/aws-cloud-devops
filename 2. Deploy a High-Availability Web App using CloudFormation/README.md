@@ -77,6 +77,5 @@ To delete the stack, use the same stack name you used when creating the stack as
 
  
 #### Output
-## Test the deployment
 The app url can be found at:  
  <a href="http://udagr-webap-1o8v9aaghnee4-394011335.us-east-1.elb.amazonaws.com/">http://udagr-webap-1o8v9aaghnee4-394011335.us-east-1.elb.amazonaws.com/</a>
