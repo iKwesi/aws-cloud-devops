@@ -1,0 +1,204 @@
+Metadata: 
+  License: Apache-2.0
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Raphael Blankson / Udacity Cloud DevOps student 2022
+  This template is for deploying a highly available web app - udagram.
+Parameters:
+  EnvironmentName:
+    Description: An environment that will be prefixed to resource names.
+    Type: String
+  ImageID:
+    Description: Id of the Amazon machine image to use for EC2 deployments.
+    Type: String
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+  DistributionId:
+    Type: String
+Resources:
+# ReadOnly Role/Policy for S3
+  RoleForS3ReadOnlyAccess:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+  InstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Roles:
+        - !Ref RoleForS3ReadOnlyAccess
+  # ------------------------------
+  # Security Group configs
+  # -------------------------------
+  InstanceServerSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http and SSH connection to our hosts.
+      VpcId:
+        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+  # --------------------------------
+  # Launch config
+  # --------------------------------
+  InstanceLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt-get update -y
+          sudo apt-get install apache2 -y
+          sudo systemctl start apache2.service
+          cd /var/www/html
+          echo "it works! Udagram, Udacity!" > index.html
+          
+      ImageId: !Ref ImageID
+      IamInstanceProfile: !Ref InstanceProfile
+      SecurityGroups:
+        - Ref: InstanceServerSecGroup
+      InstanceType: !Ref InstanceType
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: "10"
+  # ---------------------------
+  # Target groups
+  # --------------------------
+  InstanceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 8
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: "${EnvironmentName}-VPCID"
+          
+  # ----------------------------
+  # Autoscaling group
+  # ----------------------------
+  InstanceGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${EnvironmentName}-PRIV-NETS"
+      LaunchConfigurationName:
+        Ref: InstanceLaunchConfig
+      MinSize: "4"
+      MaxSize: "8"
+      TargetGroupARNs:
+        - Ref: InstanceTargetGroup
+  # --------------------------------
+  # Load balancer 
+  # --------------------------------
+  LBSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to our load balancer
+      VpcId:
+        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  WebAppLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+        - Fn::ImportValue: !Sub "${EnvironmentName}-PUB1-SN"
+        - Fn::ImportValue: !Sub "${EnvironmentName}-PUB2-SN"
+      SecurityGroups:
+        - Ref: LBSecGroup
+        
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: InstanceTargetGroup
+      LoadBalancerArn:
+        Ref: WebAppLB
+      Port: "80"
+      Protocol: HTTP
+      
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref "InstanceTargetGroup"
+      Conditions:
+        - Field: path-pattern
+          Values: [/]
+      ListenerArn: !Ref "Listener"
+      Priority: 1
+  # Notifications
+  EscalationTopic:
+    Type: AWS::SNS::Topic
+
+  EscalationTopicEmailSubscriber:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: rbblankson34@gmail.com
+      Protocol: email
+      TopicArn: !Ref EscalationTopic
+      
+  CloudFrontTotalErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/CloudFront
+      MetricName: TotalErrorRate
+      Dimensions:
+        - Name: DistributionId
+          Value: !Ref DistributionId
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      AlarmActions:
+        - !Ref EscalationTopic
+# ----------------------
+# outputs
+# ----------------------
+Outputs:
+  LoadBalancerPublicURL:
+    Description: The Public URL of the application load balancer
+    Value: !Join ["://", ["http", !GetAtt WebAppLB.DNSName]]
+    Export:
+      Name: !Sub ${EnvironmentName}-LBURL
