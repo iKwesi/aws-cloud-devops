@@ -51,9 +51,9 @@ The folder contains the following files:
   An IAM role will be created allowing ReadOnly access to S3.
 
 ### Bonus
-- **CloudWatch Alarm and  SNS Topic**
+- **CloudWatch Alarm and  SNS Topic**  
 Cloudwatch alarm for notifications and SNS Topic subscripton for sending email to the user.
-- **AWS Cloud9**
+- **AWS Cloud9**  
 To enjoy all the services of AWS without the overhead of installing things, the project was developed in AWS Cloud9 environment.
 
 ### Create-Stack
