@@ -1,5 +1,5 @@
 ### Project 2 - Deploy a high-availability web app using CloudFormation
-In this project, we are tasked to deploy webservers for a hihgly-available web app using AWS CloudFormation. We create and deploy the infrastructure and application for a dummy instagram-like application called Udagram. We begin the infrastructure deployment with the network template followed by the server side. We have also added AWS CloudWatchAlarms to notify as when we have errors.
+In this project, we are tasked to deploy webservers for a hihgly-available web app using AWS CloudFormation. We create and deploy the infrastructure and application for a dummy instagram-like application called Udagram. We begin the infrastructure deployment with the network template followed by the server side. We have also added AWS CloudWatchAlarms to notify us when we have errors and help in monitoring the status of the app.
 
 ### Infrastructure diagram
 The diagram below shows the cloud diagram to be used as a guide for developing the infrastructure with cloud formation.
