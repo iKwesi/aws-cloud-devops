@@ -3,7 +3,7 @@ In this project, we are tasked to deploy webservers for a hihgly-available web a
 
 ### Infrastructure diagram
 The diagram below shows the cloud diagram to be used as a guide for developing the infrastructure with cloud formation.
-<img src="/home/airmantis/Documents/aws-cloud-devops/2. Deploy a High-Availability Web App using CloudFormation/images/Udagram-Infrastructure-diagram.jpeg"><br/>
+<img src="images/Udagram-Infrastructure-diagram.jpeg"><br/>
 
 ### Project Requirements
 
