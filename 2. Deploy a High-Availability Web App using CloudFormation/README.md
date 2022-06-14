@@ -24,7 +24,6 @@ The folder contains the following files:
 5. `images` - contains infrastructure diagram to aid in developing the cloudformation code.
 
 ## Main Components: 
-The whole project setup is done via AWS Cloud Formation. The following core artifacts will be built.
 
 - **VPC**  
   A VPC where all relevant infrastructure will be deployed into.
