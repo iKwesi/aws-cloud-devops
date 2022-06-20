@@ -1,9 +1,9 @@
 ### Project 2 - Deploy a high-availability web app using CloudFormation
-In this project, we are tasked to deploy webservers for a hihgly-available web app using AWS CloudFormation. We create and deploy the infrastructure and application for a dummy instagram-like application called Udagram. We begin the infrastructure deployment with the network template followed by the server side. We have also added AWS CloudWatchAlarms to notify as when we have errors.
+In this project, we are tasked to deploy webservers for a hihgly-available web app using AWS CloudFormation. We create and deploy the infrastructure and application for a dummy instagram-like application called Udagram. We begin the infrastructure deployment with the network template followed by the server side. We have also added AWS CloudWatchAlarms to notify us when we have errors and help in monitoring the status of the app.
 
 ### Infrastructure diagram
 The diagram below shows the cloud diagram to be used as a guide for developing the infrastructure with cloud formation.
-<img src="/home/airmantis/Documents/aws-cloud-devops/2. Deploy a High-Availability Web App using CloudFormation/images/Udagram-Infrastructure-diagram.jpeg"><br/>
+<img src="images/Udagram-Infrastructure-diagram.jpeg"><br/>
 
 ### Project Requirements
 
@@ -24,10 +24,9 @@ The folder contains the following files:
 5. `images` - contains infrastructure diagram to aid in developing the cloudformation code.
 
 ## Main Components: 
-The whole project setup is done via AWS Cloud Formation. The following core artifacts will be built.
 
 - **VPC**  
-  A VPC where all relevant infrastructure will be deployed into.
+  A VPC allows us to launch AWS resources into a virtual network with the benefits of scalability.
 
 - **Public Subnets**  
   Public subnets contain ElasticIPs and NAT Gateways allowing access to the internet from within private
@@ -40,20 +39,22 @@ The whole project setup is done via AWS Cloud Formation. The following core arti
   Route Tables and Routes manage the traffic between the subnets and the internet through NAT Gateways and the Internet Gateway.
 
 - **NAT Gateways and Internet Gateway**  
-  NAT Gateways and Internet Gateways enable access between subnets and the internet.
+  Generally, we place a NAT gateway in a public subnet to enable the servers in a private subnet to connect to the Internet. And sometimes, we want to prevent the Internet from connecting to the servers in the private subnet..
   
 - **Load Balancer, Autoscaling, Launch Configuration and Target Groups**  
   The Load Balancer allows to evenly distribute requests to EC2 instances located in private subnets. This is possible by specifying the relevant TargetGroup in the Load Balancer's Listener.
 
 - **Security Groups**  
-  Security Groups handle ingress and egress traffic for EC2 instances and in this project restrict ingress traffic to port 80.
+  Security Groups handle ingress and egress traffic for EC2 instances. We used only `port:80`.
   
-- **IAM Role and Instance Profile**  
-  An IAM role will be created allowing ReadOnly access to S3 where the project's deployment files are located.
+- **IAM Role**  
+  An IAM role will be created allowing ReadOnly access to S3.
 
 ### Bonus
-- **CloudWatch Alarm and  SNS Topic**
+- **CloudWatch Alarm and  SNS Topic**  
 Cloudwatch alarm for notifications and SNS Topic subscripton for sending email to the user.
+- **AWS Cloud9**  
+To enjoy all the services of AWS without the overhead of installing things, the project was developed in AWS Cloud9 environment.
 
 ### Create-Stack
 To create the stack, use the code snippet as a guide:
@@ -77,6 +78,5 @@ To delete the stack, use the same stack name you used when creating the stack as
 
  
 #### Output
-## Test the deployment
 The app url can be found at:  
  <a href="http://udagr-webap-1o8v9aaghnee4-394011335.us-east-1.elb.amazonaws.com/">http://udagr-webap-1o8v9aaghnee4-394011335.us-east-1.elb.amazonaws.com/</a>
